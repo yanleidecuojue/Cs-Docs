@@ -24,7 +24,7 @@ public void reverseString(char[] s) {
     int left = 0;
     int right = s.length - 1;
     if(s.length == 0 || s.length = 1) {
-        return ; 
+        return ;
     }
     if(left < right) {
         int temp = s[left];
@@ -119,7 +119,7 @@ while(right < s.size()) {
     // 如果符合要求，说明窗口构造完成，
     if (right>=k) {
         // 这是已经是一个窗口了，根据条件做一些事情
-        // ... 可以计算窗口最大值等 
+        // ... 可以计算窗口最大值等
         // 最后不要忘记把 right -k 位置元素从窗口里面移除
     }
 }
@@ -135,6 +135,9 @@ return res;
 ```java
 public class BubbleSort {
   public int[] sort(int[] array) {
+    if(array.length == 0) {
+      return array;
+    }
     for(int i=0; i<array.length - 1; i++) {
       for(int j=0; j<array.length - i -1; j++) {
         if(array[j] > array[j+1]) {
@@ -153,7 +156,7 @@ public class BubbleSort {
     int[] result = bubbleSort.sort(a);
     for(int i=0; i< result.length; i++) {
       System.out.println(result[i]);
-    } 
+    }
   }
 }
 ```
@@ -163,37 +166,12 @@ public class BubbleSort {
 ```java
 public class SelectionSort {
   public int[] sort(int[] array) {
-    for(int i=0; i<array.length - 1; i++) {
-      for(int j=i+1; j<array.length; j++) {
-        if(array[i] > array[j]) {
-          int temp = array[i];
-          array[i] = array[j];
-          array[j]  = temp;
-        }
-      }
+    if(array.length == 0) {
+      return array;
     }
-    return array;
-  }
-
-  public static void main(String[] args) {
-    SelectionSort selectionSort = new SelectionSort();
-    int[] a = {1,4,5,6,7,3,1};
-    int[] result = selectionSort.sort(a);
-    for(int i=0; i< result.length; i++) {
-      System.out.println(result[i]);
-    } 
-  }
-}
-```
-
-##### 3.插入排序
-
-```java
-public class InsertionSort {
-  public int[] sort(int[] array) {
     for(int i=0; i<array.length - 1; i++) {
       int index = i;
-      for(int j=i; j<array.length - i -1; j++) {
+      for(int j=i; j<array.length; j++) {
         if(array[j] < array[i]) {
           index = j;
         }
@@ -211,6 +189,37 @@ public class InsertionSort {
     SelectionSort selectionSort = new SelectionSort();
     int[] a = {1,4,5,6,7,3,1};
     int[] result = selectionSort.sort(a);
+    for(int i=0; i< result.length; i++) {
+      System.out.println(result[i]);
+    }
+  }
+}
+```
+
+##### 3.插入排序
+
+```java
+public class InsertionSort {
+  public int[] sort(int[] array) {
+    if(array.length == 0) {
+      return array;
+    }
+    for(int i=0; i<array.length; i++) {
+      for(int j=0; j<i; j++) {
+        if(array[j] > array[i]) {
+          int temp = array[j];
+          array[j] = array[i];
+          array[i] = temp;
+        }
+      }
+    }
+    return array;
+  }
+
+  public static void main(String[] args) {
+    InsertionSort insertionSort = new InsertionSort();
+    int[] a = {1,4,6,5,7,3,1};
+    int[] result = insertionSort.sort(a);
     for(int i=0; i< result.length; i++) {
       System.out.println(result[i]);
     }
@@ -308,22 +317,3 @@ java实现链表
 #### 位运算
 
 ### 经典问题
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
