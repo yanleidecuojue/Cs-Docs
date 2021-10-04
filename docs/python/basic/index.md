@@ -6,16 +6,33 @@
 
 ###### a.传统安装
 
+[下载地址](https://www.python.org/downloads/)
+
 ###### b.Anaconda/Miniconda
 
 ```python
-1.anaconda官网下载安装包进行安装s
-2.修改国内镜像源
+1.anaconda官网下载安装包进行安装
+2.修改国内镜像源(修改.condarc文件)
+https://mirror.tuna.tsinghua.edu.cn/help/anaconda/
 3.conda create -n basic python=3.7.4
+conda activate base
+conda list
+4.一些常用命令
+conda install package
+conda update conda
+conda update anaconda
 ```
 ##### 3.Python基本数据类型&数据结构
 ```python
-int float str
+Python 3.8.8 (default, Apr 13 2021, 19:58:26)
+[GCC 7.3.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> int
+<class 'int'>
+>>> float
+<class 'float'>
+>>> str
+<class 'str'>
 >>> tuple
 <class 'tuple'>
 >>> list
@@ -25,13 +42,13 @@ int float str
 >>> set
 <class 'set'>
 
-以上四种数据类型的数据均可以通过以下方式遍历
+str,tuple,list,dict,set均可通过以下方式遍历
 for index,item in enumerate(data):
   print(index,item)
 ```
 ##### 4.Python函数
 
-Python的函数定义非常简单，但灵活度却非常大。除了正常定义的必选参数外，还可以使用默认参数(param=2，指向不变对象)、可变参数(* numbers)和关键字参数(关键字参数=>命名关键字参数)，使得函数定义出来的接口，不但能处理复杂的参数，还可以简化调用者的代码。
+Python的函数定义非常简单，但灵活度却非常大。除了正常定义的必选参数外，还可以使用默认参数(param=2，指向不变对象)，可变参数(* args)和关键字参数(**kw，关键字参数=>命名关键字参数)，使得函数定义出来的接口，不但能处理复杂的参数，还可以简化调用者的代码。
 
 ```python
 # 默认参数
@@ -40,9 +57,9 @@ def enroll(name, gender, age=6, city='Beijing'):
     print('gender:', gender)
     print('age:', age)
     print('city:', city)
->>> enroll('Sarah', 'F')
-name: Sarah
-gender: F
+>>> enroll('Licona Moyi', '男')
+name: Licona Moyi
+gender: 男
 age: 6
 city: Beijing
 # 可变参数
@@ -51,8 +68,8 @@ def calc(*numbers):
     for n in numbers:
         sum = sum + n * n
     return sum
->>> calc(1, 2)
-5
+>>> calc(1,3,4,2,5)
+15
 >>> calc()
 0
 # 关键字参数
@@ -60,8 +77,8 @@ def person(name, age, **kw):
     print('name:', name, 'age:', age, 'other:', kw)
 >>> person('Bob', 35, city='Beijing')
 name: Bob age: 35 other: {'city': 'Beijing'}
->>> person('Adam', 45, gender='M', job='Engineer')
-name: Adam age: 45 other: {'gender': 'M', 'job': 'Engineer'}
+>>> person('Bob', 13, city='Beijing', gender='男')
+name: Bob age: 13 other: {'city': 'Beijing', 'gender': '男'}
 # 命名关键字参数(命名关键字参数必须传入参数名，这和位置参数不同。如果没有传入参数名，调用将报错)
 def person(name, age, *, city, job):
     print(name, age, city, job)
@@ -89,9 +106,9 @@ a = 1 b = 2 c = 0 d = 99 kw = {'ext': None}
 对于任意函数，都可以通过类似func(*args, **kw)的形式调用它，无论它的参数是如何定义的。
 ```
 
-在Python中定义函数，可以用必选参数、默认参数、可变参数、关键字参数和命名关键字参数，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：必选参数、默认参数、可变参数、命名关键字参数和关键字参数。
+在Python中定义函数，可以用必选参数、默认参数、可变参数、关键字参数和命名关键字参数，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：必选参数、默认参数、可变参数、关键字参数和命名关键字参数。
 
-**特殊：**递归
+**注：**递归
 
 ```python
 # 尾递归优化: 在函数返回的时候，调用自身本身，并且，return语句不能包含表达式。这样，编译器或者解释器就可以把尾递归做优化，使递归本身无论调用多少次，都只占用一个栈帧，不会出现栈溢出的情况。
@@ -190,7 +207,7 @@ for index， item in enumrate(ltds):
 [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
 >>> g = (x * x for x in range(10))
 >>> g
-<generator object <genexpr> at 0x1022ef630>
+<generator object <genexpr> at 0x7f67b62aed60>
 >>> next(g)
 0
 >>> next(g)
@@ -321,6 +338,13 @@ def not_empty(s):
 
 list(filter(not_empty, ['A', '', 'B', None, 'C', '  ']))
 # 结果: ['A', 'B', 'C']
+def _odd_iter():
+    n = 1
+    while True:
+        n = n + 2
+        yield n
+def _not_divisible(n):
+    return lambda x: x % n > 0
 def primes():
     yield 2
     it = _odd_iter() # 初始序列
@@ -402,7 +426,7 @@ def log(text):
 ```python
 正常的函数和变量名是公开的（public），可以被直接引用，比如：abc，x123，PI等；
 
-类似__xxx__这样的变量是特殊变量，可以被直接引用，但是有特殊用途，比如上面的__author__，__name__就是特殊变量，hello模块定义的文档注释也可以用特殊变量__doc__访问，我们自己的变量一般不要用这种变量名；
+类似__xxx__这样的变量是特殊变量，可以被直接引用，但是有特殊用途，比如__author__，__name__就是特殊变量，hello模块定义的文档注释也可以用特殊变量__doc__访问，我们自己的变量一般不要用这种变量名；
 
 类似_xxx和__xxx这样的函数或变量就是非公开的（private），不应该被直接引用，比如_abc，__abc等；
 ```
@@ -1192,6 +1216,8 @@ Counter({'r': 2, 'o': 2, 'g': 2, 'm': 2, 'l': 2, 'p': 1, 'a': 1, 'i': 1, 'n': 1,
 7.itertools
 
 8.contectlib
+
+#### 二.numpy
 
 
 

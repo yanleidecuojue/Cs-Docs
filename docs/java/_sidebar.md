@@ -1,7 +1,8 @@
 <!-- docs/_sidebar.md -->
 
 * Fundamentals
-    * [操作系统](/java/fundamentals/操作系统/index.md)
+    * [操作系统理论](/java/fundamentals/操作系统/理论.md)
+    * [操作系统实验](/java/fundamentals/操作系统/实验.md)
     * [计算机网络](/java/fundamentals/计算机网络/index.md)
     * [算法与数据结构](/java/fundamentals/算法与数据结构/index.md)
 
