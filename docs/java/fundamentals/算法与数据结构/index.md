@@ -19,6 +19,8 @@ public void find(int[] list) {
 
 ###### 1.反转字符串
 
+https://leetcode-cn.com/problems/reverse-string/submissions/
+
 ```java
 public void reverseString(char[] s) {
     int left = 0;
@@ -39,18 +41,23 @@ public void reverseString(char[] s) {
 
 ###### 1.判断链表中是否含有环
 
+https://leetcode-cn.com/problems/linked-list-cycle/submissions/
+
 ```java
-boolean hasCycle(ListNode head) {
-    ListNode fast,slow;
-    fast = slow = head;
-    while(fast != null && fast.next !=null) {
-        fast = fast.next.next;
-        slow = slow.next;
-        if(fast = slow) {
-            return true;
-        }
-    }
-    return true;
+public boolean hasCycle(ListNode head) {
+  ListNode slow = head;
+  ListNode fast = head;
+  if(head == null || head.next == null || head.next.next == null) {
+      return false;
+  }
+  while(fast!= null && fast.next != null) {
+      slow = slow.next;
+      fast = fast.next.next;
+      if(slow == fast) {
+          return true;
+      }
+  }
+  return false;
 }
 ```
 
@@ -78,7 +85,7 @@ ListNode getCycleStart(ListNode head) {
 }
 ```
 
-###### 3.寻找链表的中点
+###### 3.寻找链表的中点 =>对链表进行归并排序
 
 ###### 4.寻找链表中倒数第k个元素
 
@@ -126,7 +133,79 @@ while(right < s.size()) {
 return res;
 ```
 
-@TODO 滑动窗口算法实例
+###### 1.尽可能使字符串相等
+
+https://leetcode-cn.com/problems/get-equal-substrings-within-budget/
+
+```java
+public int equalSubstring(String s, String t, int maxCost) {
+    int left = 0, right =0;
+    int sum = 0;
+    int res = 0;　　　　 // 构造窗口
+    while (right < s.length()) {
+        sum += Math.abs(s.charAt(right) - t.charAt(right));
+        right++;　　　　　　　// 窗口构造完成，这时候要根据条件当前的窗口调整窗口大小
+        while (sum > maxCost) {
+            sum -=  Math.abs(s.charAt(left) - t.charAt(left));
+            left++;
+        }　　　　　　　// 记录此时窗口的大小
+        res = Math.max(res, right -left);
+    }
+    return res;
+}
+```
+
+###### 2.滑动窗口最大值
+
+https://leetcode-cn.com/problems/sliding-window-maximum/submissions/
+
+```java
+public static int[] maxSlidingWindow(int[] nums, int k) {
+    int right =0;
+    int[] res = new int[nums.length -k +1];
+    int index=0;
+    LinkedList<Integer> list = new LinkedList<>();　　　　　// 开始构造窗口
+    while (right < nums.length) {　　　　　　　// 这里的list的首位必须是窗口中最大的那位
+        while (!list.isEmpty() && nums[right] > list.peekLast()) {
+            list.removeLast();
+        }　　　　　　　// 不断添加
+        list.addLast(nums[right]);
+        right++;　　　　　　　// 构造窗口完成，这时候需要根据条件做一些操作
+        if (right >= k){
+            res[index++]=list.peekFirst();　　　　　　　　　　// 如果发现第一个已经在窗口外面了，就移除
+            if(list.peekFirst() == nums[right-k]) {
+                list.removeFirst();
+            }
+        }
+    }
+    return res;
+}
+```
+
+###### 3.定长子串中元音的最大数目
+
+https://leetcode-cn.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/
+
+```java
+public int maxVowels(String s, int k) {
+  int right =0;
+  int sum = 0;
+  int max = 0;
+  while (right < s.length()) {
+      sum += isYuan(s.charAt(right)) ;
+      right++;
+      if (right >=k) {
+          max = Math.max(max, sum);
+          sum -= isYuan(s.charAt(right-k));
+      }
+  }
+  return max;
+}
+
+public int isYuan(char s) {
+  return s=='a' || s=='e' ||s=='i' ||s=='o' ||s=='u' ? 1:0;
+}
+```
 
 #### 排序
 
@@ -276,9 +355,8 @@ public class MergeSort {
 ##### 5.快速排序
 
 ```java
+
 ```
-
-
 
 #### 贪心思想
 
@@ -295,12 +373,6 @@ public class MergeSort {
 ### 数据结构
 
 #### 链表
-
-java实现链表
-
-```java
-
-```
 
 #### 树
 
