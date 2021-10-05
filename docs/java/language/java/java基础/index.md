@@ -1,61 +1,103 @@
-1. Oracle JDK 使用 BCL/OTN 协议获得许可，而 OpenJDK 根据 GPL v2 许可获得许可。
+#### 基础
 
-- BCL 协议（Oracle Binary Code License Agreement）： 可以使用JDK（支持商用），但是不能进行修改。
-- OTN 协议（Oracle Technology Network License Agreement）： 11 及之后新发布的JDK用的都是这个协议，可以自己私下用，但是商用需要付费。
+##### 1.java XXX.java 这是java11新增的一个功能，可以直接运行一个单文件源码
 
-### [字符型常量和字符串常量的区别?](https://snailclimb.gitee.io/javaguide/#/docs/java/basis/Java基础知识?id=字符型常量和字符串常量的区别)
+##### 2.浮点数可表示的范围非常大，`float`类型可最大表示3.4x1038，而`double`类型可最大表示1.79x10308。
 
-1. **形式** : 字符常量是单引号引起的一个字符，字符串常量是双引号引起的 0 个或若干个字符
-2. **含义** : 字符常量相当于一个整型值( ASCII 值),可以参加表达式运算; 字符串常量代表一个地址值(该字符串在内存中存放位置)
-3. **占内存大小** ： 字符常量只占 2 个字节; 字符串常量占若干个字节 (**注意： char 在 Java 中占两个字节**),
+##### 3.Java语言对布尔类型的存储并没有做规定，因为理论上存储布尔类型只需要1 bit，但是通常JVM内部会把`boolean`表示为4字节整数。
 
-### [Java 泛型了解么？什么是类型擦除？介绍一下常用的通配符？](https://snailclimb.gitee.io/javaguide/#/docs/java/basis/Java基础知识?id=java-泛型了解么？什么是类型擦除？介绍一下常用的通配符？)
+##### 4.字符类型`char`表示一个字符。Java的`char`类型除了可表示标准的ASCII外，还可以表示一个Unicode字符：
 
-Java 泛型（generics）是 JDK 5 中引入的一个新特性, 泛型提供了编译时类型安全检测机制，该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。
+##### 5.var关键字
 
-Java 的泛型是伪泛型，这是因为 Java 在编译期间，所有的泛型信息都会被擦掉，这也就是通常所说类型擦除 。
+有些时候，类型的名字太长，写起来比较麻烦。例如：
 
-```java
-List<Integer> list = new ArrayList<>();
-
-list.add(12);
-//这里直接添加会报错
-list.add("a");
-Class<? extends List> clazz = list.getClass();
-Method add = clazz.getDeclaredMethod("add", Object.class);
-//但是通过反射添加，是可以的
-add.invoke(list, "kl");
-
-System.out.println(list);
+```
+StringBuilder sb = new StringBuilder();
 ```
 
-**常用的通配符为： T，E，K，V，？**
+这个时候，如果想省略变量类型，可以使用`var`关键字：
 
-- ？ 表示不确定的 java 类型
-- T (type) 表示具体的一个 java 类型
-- K V (key value) 分别代表 java 键值中的 Key Value
-- E (element) 代表 Element
-
-```java
-public final native Class<?> getClass()//native方法，用于返回当前运行时对象的Class对象，使用了final关键字修饰，故不允许子类重写。
-
-public native int hashCode() //native方法，用于返回对象的哈希码，主要使用在哈希表中，比如JDK中的HashMap。
-public boolean equals(Object obj)//用于比较2个对象的内存地址是否相等，String类对该方法进行了重写用户比较字符串的值是否相等。
-
-protected native Object clone() throws CloneNotSupportedException//naitive方法，用于创建并返回当前对象的一份拷贝。一般情况下，对于任何对象 x，表达式 x.clone() != x 为true，x.clone().getClass() == x.getClass() 为true。Object本身没有实现Cloneable接口，所以不重写clone方法并且进行调用的话会发生CloneNotSupportedException异常。
-
-public String toString()//返回类的名字@实例的哈希码的16进制的字符串。建议Object所有的子类都重写这个方法。
-
-public final native void notify()//native方法，并且不能重写。唤醒一个在此对象监视器上等待的线程(监视器相当于就是锁的概念)。如果有多个线程在等待只会任意唤醒一个。
-
-public final native void notifyAll()//native方法，并且不能重写。跟notify一样，唯一的区别就是会唤醒在此对象监视器上等待的所有线程，而不是一个线程。
-
-public final native void wait(long timeout) throws InterruptedException//native方法，并且不能重写。暂停线程的执行。注意：sleep方法没有释放锁，而wait方法释放了锁 。timeout是等待时间。
-
-public final void wait(long timeout, int nanos) throws InterruptedException//多了nanos参数，这个参数表示额外时间（以毫微秒为单位，范围是 0-999999）。 所以超时的时间还需要加上nanos毫秒。
-
-public final void wait() throws InterruptedException//跟之前的2个wait方法一样，只不过该方法一直等待，没有超时时间这个概念
-
-protected void finalize() throws Throwable { }//实例被垃圾回收器回收的时候触发的操作
+```
+var sb = new StringBuilder();
 ```
 
+编译器会根据赋值语句自动推断出变量`sb`的类型是`StringBuilder`。对编译器来说，语句：
+
+```
+var sb = new StringBuilder();
+```
+
+实际上会自动变成：
+
+```
+StringBuilder sb = new StringBuilder();
+```
+
+##### 6.整数的除法对于除数为0时运行时将报错，但编译不会报错。
+
+##### 7，还有一种无符号的右移运算，使用`>>>`，它的特点是不管符号位，右移后高位总是补`0`，因此，对一个负数进行`>>>`右移，它会变成正数，原因是最高位的`1`变成了`0`：
+
+```
+int n = -536870912;
+int a = n >>> 1;  // 01110000 00000000 00000000 00000000 = 1879048192
+int b = n >>> 2;  // 00111000 00000000 00000000 00000000 = 939524096
+int c = n >>> 29; // 00000000 00000000 00000000 00000111 = 7
+int d = n >>> 31; // 00000000 00000000 00000000 00000001 = 1
+```
+
+对`byte`和`short`类型进行移位时，会首先转换为`int`再进行位移。
+
+##### 8.整数运算在除数为`0`时会报错，而浮点数运算在除数为`0`时，不会报错，但会返回几个特殊值：
+
+- `NaN`表示Not a Number
+- `Infinity`表示无穷大
+- `-Infinity`表示负无穷大
+
+例如：
+
+```
+double d1 = 0.0 / 0; // NaN
+double d2 = 1.0 / 0; // Infinity
+double d3 = -1.0 / 0; // -Infinity
+```
+
+##### 7.可以将浮点数强制转型为整数。在转型时，浮点数的小数部分会被丢掉。如果转型后超过了整型能表示的最大范围，将返回整型的最大值
+
+##### 8.从Java 13开始，字符串可以用`"""..."""`表示多行字符串（Text Blocks）了。
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String s = """
+                   SELECT * FROM
+                     users
+                   WHERE id > 100
+                   ORDER BY name DESC
+                   """;
+        System.out.println(s);
+    }
+}
+```
+
+##### 9.java的格式化功能提供了多种占位符，可以把各种数据类型“格式化”成指定的字符串：
+
+| 占位符 | 说明                             |
+| :----- | :------------------------------- |
+| %d     | 格式化输出整数                   |
+| %x     | 格式化输出十六进制整数           |
+| %f     | 格式化输出浮点数                 |
+| %e     | 格式化输出科学计数法表示的浮点数 |
+| %s     | 格式化字符串                     |
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        int n = 12345000;
+        System.out.printf("n=%d, hex=%08x", n, n); // 注意，两个%占位符必须传入两个数
+    }
+}
+n=12345000, hex=00bc5ea8
+```
+
+If判断

@@ -214,27 +214,23 @@ public int isYuan(char s) {
 ```java
 public class BubbleSort {
   public int[] sort(int[] array) {
-    if(array.length == 0) {
-      return array;
-    }
     for(int i=0; i<array.length - 1; i++) {
-      for(int j=0; j<array.length - i -1; j++) {
+      for(int j=0; j<array.length - i - 1; j++) {
         if(array[j] > array[j+1]) {
           int temp = array[j];
           array[j] = array[j+1];
-          array[j+1]  = temp;
+          array[j+1] = temp;
         }
       }
     }
     return array;
   }
-
   public static void main(String[] args) {
+    int array[] = {6,5,7,4,3,1,9};
     BubbleSort bubbleSort = new BubbleSort();
-    int[] a = {1,4,5,6,7,3,1};
-    int[] result = bubbleSort.sort(a);
-    for(int i=0; i< result.length; i++) {
-      System.out.println(result[i]);
+    int ans[] = bubbleSort.sort(array);
+    for(int i=0; i<ans.length; i++) {
+      System.out.println(ans[i]);
     }
   }
 }
@@ -245,31 +241,28 @@ public class BubbleSort {
 ```java
 public class SelectionSort {
   public int[] sort(int[] array) {
-    if(array.length == 0) {
-      return array;
-    }
-    for(int i=0; i<array.length - 1; i++) {
+    for(int i=0; i<array.length-1; i++) {
       int index = i;
       for(int j=i; j<array.length; j++) {
-        if(array[j] < array[i]) {
+        if(array[index] > array[j]) {
           index = j;
         }
       }
       if(index != i) {
-        int temp = array[i];
-        array[i] = array[index];
-        array[index] = temp;
+        int temp = array[index];
+        array[index] = array[i];
+        array[i] = temp;
       }
     }
     return array;
   }
 
   public static void main(String[] args) {
+    int array[] = {6,5,7,4,3,1,9};
     SelectionSort selectionSort = new SelectionSort();
-    int[] a = {1,4,5,6,7,3,1};
-    int[] result = selectionSort.sort(a);
-    for(int i=0; i< result.length; i++) {
-      System.out.println(result[i]);
+    int ans[] = selectionSort.sort(array);
+    for(int i=0; i<ans.length; i++) {
+      System.out.println(ans[i]);
     }
   }
 }
@@ -280,10 +273,7 @@ public class SelectionSort {
 ```java
 public class InsertionSort {
   public int[] sort(int[] array) {
-    if(array.length == 0) {
-      return array;
-    }
-    for(int i=0; i<array.length; i++) {
+    for(int i=1; i<array.length; i++) {
       for(int j=0; j<i; j++) {
         if(array[j] > array[i]) {
           int temp = array[j];
@@ -296,11 +286,11 @@ public class InsertionSort {
   }
 
   public static void main(String[] args) {
+    int array[] = {6,5,7,4,3,1,9};
     InsertionSort insertionSort = new InsertionSort();
-    int[] a = {1,4,6,5,7,3,1};
-    int[] result = insertionSort.sort(a);
-    for(int i=0; i< result.length; i++) {
-      System.out.println(result[i]);
+    int ans[] = insertionSort.sort(array);
+    for(int i=0; i<ans.length; i++) {
+      System.out.println(ans[i]);
     }
   }
 }
@@ -310,43 +300,44 @@ public class InsertionSort {
 
 ```java
 public class MergeSort {
-  public static void sort(int[] array, int[] temp, int left, int right) {
-    if(left < right) {
-      int middle = (left + right) / 2;
-      sort(array, temp, left, middle);
-      sort(array, temp, middle+1, right);
-      merge(array, temp, middle, left, right);
-    }
+  public int[] sort(int[] array) {
+    int left = 0;
+    int right = array.length -1;
+    merge(left, right, array);
+    return array;
   }
 
-  public static void merge(int[] array, int[] temp, int middle, int left, int right) {
-    int i = left;
-    int j = middle + 1;
-    int k = 0;
-    while(i <= middle && j<=right) {
-      temp[k++] = (array[i] <= array[j]) ? array[i++]:array[j++];
+  public void merge(int left, int right, int[] array) {
+    if(right == left) {
+      return;
     }
+    if(right == left +1 && array[left] > array[right]) {
+      int temp = array[left];
+      array[left] = array[left+1];
+      array[left+1] = temp;
+      return;
+    }
+    int middle = (left + right) / 2;
+    merge(left, middle, array);
+    merge(middle + 1, right, array);
 
-    while(i <= middle) {
-      temp[k++] = array[i++];
-    }
-
-    while(j <= right) {
-      temp[k++] = array[j++];
-    }
-    for (i=0; i<k; ++i){
-      array[left+i] = temp[i];
+    for(int i=middle + 1; i<=right; i++) {
+      for(int j=left; j<i; j++) {
+        if(array[j] > array[i]) {
+          int temp = array[j];
+          array[j] = array[i];
+          array[i] = temp;
+        }
+      }
     }
   }
 
   public static void main(String[] args) {
-    int[] a = {3,6,7,2,1,4,6,8,3,4,1};
+    int array[] = {6,5,7,4,3,1,9};
     MergeSort mergeSort = new MergeSort();
-    int[] temp = new int[a.length];
-    mergeSort.sort(a, temp, 0, a.length - 1);
-
-    for(int i=0; i<temp.length; i++) {
-      System.out.println(temp[i]);
+    int ans[] = mergeSort.sort(array);
+    for(int i=0; i<ans.length; i++) {
+      System.out.println(ans[i]);
     }
   }
 }
@@ -355,7 +346,52 @@ public class MergeSort {
 ##### 5.快速排序
 
 ```java
-
+public class QuickSort {
+    public static void quickSort(int[] arr,int low,int high){
+        int i,j,temp,t;
+        if(low>high){
+            return;
+        }
+        i=low;
+        j=high;
+        //temp就是基准位
+        temp = arr[low];
+ 
+        while (i<j) {
+            //先看右边，依次往左递减
+            while (temp<=arr[j]&&i<j) {
+                j--;
+            }
+            //再看左边，依次往右递增
+            while (temp>=arr[i]&&i<j) {
+                i++;
+            }
+            //如果满足条件则交换
+            if (i<j) {
+                t = arr[j];
+                arr[j] = arr[i];
+                arr[i] = t;
+            }
+ 
+        }
+        //最后将基准为与i和j相等位置的数字交换
+         arr[low] = arr[i];
+         arr[i] = temp;
+        //递归调用左半数组
+        quickSort(arr, low, j-1);
+        //递归调用右半数组
+        quickSort(arr, j+1, high);
+    }
+ 
+ 
+    public static void main(String[] args){
+        int[] arr = {10,7,2,4,7,62,3,4,2,1,8,9,19};
+        quickSort(arr, 0, arr.length-1);
+        for (int i = 0; i < arr.length; i++) {
+            System.out.println(arr[i]);
+        }
+    }
+}
 ```
 
 #### 贪心思想
