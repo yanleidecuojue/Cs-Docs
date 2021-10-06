@@ -257,5 +257,267 @@ Java的内部类可分为Inner Class、Anonymous Class和Static Nested Class三�
 
 ##### 22.jdk9中引入的模块 @TODO
 
-字符串和编码
+##### 23.字符串
 
+两个字符串比较，必须总是使用`equals()`方法。要忽略大小写比较，使用`equalsIgnoreCase()`方法。
+
+```java
+// 是否包含子串:
+"Hello".contains("ll"); // true
+"Hello".indexOf("l"); // 2
+"Hello".lastIndexOf("l"); // 3
+"Hello".startsWith("He"); // true
+"Hello".endsWith("lo"); // true
+"Hello".substring(2); // "llo"
+"Hello".substring(2, 4); "ll"
+"  \tHello\r\n ".trim(); // "Hello"
+"".isEmpty(); // true，因为字符串长度为0
+"  ".isEmpty(); // false，因为字符串长度不为0
+"  \n".isBlank(); // true，因为只包含空白字符
+" Hello ".isBlank(); // false，因为包含非空白字符
+String s = "hello";
+s.replace('l', 'w'); // "hewwo"，所有字符'l'被替换为'w'
+s.replace("ll", "~~"); // "he~~o"，所有子串"ll"被替换为"~~"
+String s = "A,,B;C ,D";
+s.replaceAll("[\\,\\;\\s]+", ","); // "A,B,C,D"
+String s = "A,B,C,D";
+String[] ss = s.split("\\,"); // {"A", "B", "C", "D"}
+String[] arr = {"A", "B", "C"};
+String s = String.join("***", arr); // "A***B***C"
+public class Main {
+    public static void main(String[] args) {
+        String s = "Hi %s, your score is %d!";
+        System.out.println(s.formatted("Alice", 80));
+        System.out.println(String.format("Hi %s, your score is %.2f!", "Bob", 59.5));
+    }
+}
+String.valueOf(123); // "123"
+String.valueOf(45.67); // "45.67"
+String.valueOf(true); // "true"
+String.valueOf(new Object()); // 类似java.lang.Object@636be97c
+
+要特别注意，Integer有个getInteger(String)方法，它不是将字符串转换为int，而是把该字符串对应的系统变量转换为Integer：
+Integer.getInteger("java.version"); // 版本号，11
+
+char[] cs = "Hello".toCharArray(); // String -> char[]
+String s = new String(cs); // char[] -> String
+
+byte[] b1 = "Hello".getBytes(); // 按系统默认编码转换，不推荐
+byte[] b2 = "Hello".getBytes("UTF-8"); // 按UTF-8编码转换
+byte[] b2 = "Hello".getBytes("GBK"); // 按GBK编码转换
+byte[] b3 = "Hello".getBytes(StandardCharsets.UTF_8); // 按UTF-8编码转换
+
+较新的JDK版本的String则以byte[]存储：如果String仅包含ASCII字符，则每个byte存储一个字符，否则，每两个byte存储一个字符，这样做的目的是为了节省内存，因为大量的长度较短的String通常仅包含ASCII字符
+```
+
+##### 24.StringBuilder&&StringBuffer
+
+虽然可以直接拼接字符串，但是，在循环中，每次循环都会创建新的字符串对象，然后扔掉旧的字符串。这样，绝大部分字符串都是临时对象，不但浪费内存，还会影响GC效率。
+
+为了能高效拼接字符串，Java标准库提供了`StringBuilder`，它是一个可变对象，可以预分配缓冲区，这样，往`StringBuilder`中新增字符时，不会创建新的临时对象：
+
+```java
+StringBuilder sb = new StringBuilder(1024);
+for (int i = 0; i < 1000; i++) {
+    sb.append(',');
+    sb.append(i);
+}
+String s = sb.toString();
+
+public class Main {
+    public static void main(String[] args) {
+        var sb = new StringBuilder(1024);
+        sb.append("Mr ")
+          .append("Bob")
+          .append("!")
+          .insert(0, "Hello, ");
+        System.out.println(sb.toString());
+    }
+}
+```
+
+注意：对于普通的字符串`+`操作，并不需要我们将其改写为`StringBuilder`，因为Java编译器在编译时就自动把多个连续的`+`操作编码为`StringConcatFactory`的操作。在运行期，`StringConcatFactory`会自动把字符串连接操作优化为数组复制或者`StringBuilder`操作。
+
+你可能还听说过`StringBuffer`，这是Java早期的一个`StringBuilder`的线程安全版本，它通过同步来保证多个线程操作`StringBuffer`也是安全的，但是同步会带来执行速度的下降。
+
+`StringBuilder`和`StringBuffer`接口完全相同，现在完全没有必要使用`StringBuffer`。
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String[] names = {"Bob", "Alice", "Grace"};
+        var sb = new StringBuilder();
+        sb.append("Hello ");
+        for (String name : names) {
+            sb.append(name).append(", ");
+        }
+        // 注意去掉最后的", ":
+        sb.delete(sb.length() - 2, sb.length());
+        sb.append("!");
+        System.out.println(sb.toString());
+    }
+}
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String[] names = {"Bob", "Alice", "Grace"};
+        var sj = new StringJoiner(", ");
+        for (String name : names) {
+            sj.add(name);
+        }
+        System.out.println(sj.toString());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        String[] names = {"Bob", "Alice", "Grace"};
+        var sj = new StringJoiner(", ", "Hello ", "!");
+        for (String name : names) {
+            sj.add(name);
+        }
+        System.out.println(sj.toString());
+    }
+}
+
+String还提供了一个静态方法join()，这个方法在内部使用了StringJoiner来拼接字符串，在不需要指定“开头”和“结尾”的时候，用String.join()更方便：
+
+String[] names = {"Bob", "Alice", "Grace"};
+var s = String.join(", ", names);
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(Integer.toString(100)); // "100",表示为10进制
+        System.out.println(Integer.toString(100, 36)); // "2s",表示为36进制
+        System.out.println(Integer.toHexString(100)); // "64",表示为16进制
+        System.out.println(Integer.toOctalString(100)); // "144",表示为8进制
+        System.out.println(Integer.toBinaryString(100)); // "1100100",表示为2进制
+    }
+}
+```
+
+```java
+// boolean只有两个值true/false，其包装类型只需要引用Boolean提供的静态字段:
+Boolean t = Boolean.TRUE;
+Boolean f = Boolean.FALSE;
+// int可表示的最大/最小值:
+int max = Integer.MAX_VALUE; // 2147483647
+int min = Integer.MIN_VALUE; // -2147483648
+// long类型占用的bit和byte数量:
+int sizeOfLong = Long.SIZE; // 64 (bits)
+int bytesOfLong = Long.BYTES; // 8 (bytes)
+```
+
+##### 26.JavaBean
+
+要枚举一个JavaBean的所有属性，可以直接使用Java核心库提供的`Introspector`
+
+```java
+public class Main {
+    public static void main(String[] args) throws Exception {
+        BeanInfo info = Introspector.getBeanInfo(Person.class);
+        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
+            System.out.println(pd.getName());
+            System.out.println("  " + pd.getReadMethod());
+            System.out.println("  " + pd.getWriteMethod());
+        }
+    }
+}
+
+class Person {
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+
+##### 27.enum
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Weekday day = Weekday.SUN;
+        if (day == Weekday.SAT || day == Weekday.SUN) {
+            System.out.println("Work at home!");
+        } else {
+            System.out.println("Work at office!");
+        }
+    }
+}
+
+enum Weekday {
+    SUN, MON, TUE, WED, THU, FRI, SAT;
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Weekday day = Weekday.SUN;
+        if (day.dayValue == 6 || day.dayValue == 0) {
+            System.out.println("Work at home!");
+        } else {
+            System.out.println("Work at office!");
+        }
+    }
+}
+
+enum Weekday {
+    MON(1), TUE(2), WED(3), THU(4), FRI(5), SAT(6), SUN(0);
+
+    public final int dayValue;
+
+    private Weekday(int dayValue) {
+        this.dayValue = dayValue;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Weekday day = Weekday.SUN;
+        if (day.dayValue == 6 || day.dayValue == 0) {
+            System.out.println("Today is " + day + ". Work at home!");
+        } else {
+            System.out.println("Today is " + day + ". Work at office!");
+        }
+    }
+}
+
+enum Weekday {
+    MON(1, "星期一"), TUE(2, "星期二"), WED(3, "星期三"), THU(4, "星期四"), FRI(5, "星期五"), SAT(6, "星期六"), SUN(0, "星期日");
+
+    public final int dayValue;
+    private final String chinese;
+
+    private Weekday(int dayValue, String chinese) {
+        this.dayValue = dayValue;
+        this.chinese = chinese;
+    }
+
+    @Override
+    public String toString() {
+        return this.chinese;
+    }
+}
+```
+
+通过`ordinal()`返回常量定义的顺序（无实质意义）；
+
+记录类
