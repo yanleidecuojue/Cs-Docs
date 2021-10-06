@@ -100,4 +100,162 @@ public class Main {
 n=12345000, hex=00bc5ea8
 ```
 
-If判断
+##### 10.从java12开始，switch语句升级为更简洁的表达式语法，使用类似模式匹配(Pattern Matching)的方法，保证只有一条路径会被执行，并且不需要break语句
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String fruit = "apple";
+        switch (fruit) {
+        case "apple" -> System.out.println("Selected apple");
+        case "pear" -> System.out.println("Selected pear");
+        case "mango" -> {
+            System.out.println("Selected mango");
+            System.out.println("Good choice!");
+        }
+        default -> System.out.println("No fruit selected");
+        }
+    }
+}
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String fruit = "apple";
+        int opt = switch (fruit) {
+            case "apple" -> 1;
+            case "pear", "mango" -> 2;
+            default -> 0;
+        }; // 注意赋值语句要以;结束
+        System.out.println("opt = " + opt);
+    }
+}
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String fruit = "orange";
+        int opt = switch (fruit) {
+            case "apple" -> 1;
+            case "pear", "mango" -> 2;
+            default -> {
+                int code = fruit.hashCode();
+                yield code; // switch语句返回值
+            }
+        };
+        System.out.println("opt = " + opt);
+    }
+}
+```
+
+##### 11.使用Arrays.toString(array)可以快速获取数组内容，Arrays.deepToString()打印二维数组
+
+##### 12.命令行参数
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        for (String arg : args) {
+            if ("-version".equals(arg)) {
+                System.out.println("v 1.0");
+                break;
+            }
+        }
+    }
+}
+```
+
+##### 13.可变参数
+
+```java
+class Group {
+    private String[] names;
+
+    public void setNames(String... names) {
+        this.names = names;
+    }
+}
+```
+
+##### 14.如果父类没有默认的构造方法，子类就必须显式调用`super()`并给出参数以便让编译器定位到父类的一个合适的构造方法。
+
+##### 15.从Java 15开始，允许使用`sealed`修饰class，并通过`permits`明确写出能够从该class继承的子类名称。
+
+```java
+public sealed class Shape permits Rect, Circle, Triangle {
+    ...
+}
+```
+
+`sealed`类主要用于一些框架，防止继承被滥用。
+
+##### 16.从Java 14开始，判断`instanceof`后，可以直接转型为指定变量，避免再次强制转型。
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Object obj = "hello";
+        if (obj instanceof String s) {
+            // 可以直接使用变量s:
+            System.out.println(s.toUpperCase());
+        }
+    }
+}
+```
+
+##### 17.Java的实例方法调用是基于运行时的实际类型的动态调用，而非变量的声明类型。
+
+这个非常重要的特性在面向对象编程中称之为多态。它的英文拼写非常复杂：Polymorphic。
+
+##### 18.default方法
+
+```java
+interface Person {
+    String getName();
+    default void run() {
+        System.out.println(getName() + " run");
+    }
+}
+```
+
+实现类可以不必覆写`default`方法。`default`方法的目的是，当我们需要给接口新增一个方法时，会涉及到修改全部子类。如果新增的是`default`方法，那么子类就不必全部修改，只需要在需要覆写的地方去覆写新增方法。
+
+##### 19.因为`interface`是一个纯抽象类，所以它不能定义实例字段。但是，`interface`是可以有静态字段的，并且静态字段必须为`final`类型：
+
+```
+public interface Person {
+    public static final int MALE = 1;
+    public static final int FEMALE = 2;
+}
+```
+
+实际上，因为`interface`的字段只能是`public static final`类型，所以我们可以把这些修饰符都去掉，上述代码可以简写为：
+
+```
+public interface Person {
+    // 编译器会自动加上public statc final:
+    int MALE = 1;
+    int FEMALE = 2;
+}
+```
+
+##### 20.只导入静态字段和方法
+
+```
+// 导入System类的所有静态字段和静态方法:
+import static java.lang.System.*;
+```
+
+##### 21.内部类
+
+Java的内部类可分为Inner Class、Anonymous Class和Static Nested Class三种：
+
+- Inner Class和Anonymous Class本质上是相同的，都必须依附于Outer Class的实例，即隐含地持有`Outer.this`实例，并拥有Outer Class的`private`访问权限；
+- Static Nested Class是独立类，但拥有Outer Class的`private`访问权限。
+
+##### 22.jdk9中引入的模块 @TODO
+
+字符串和编码
+
