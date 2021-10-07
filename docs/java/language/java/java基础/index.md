@@ -520,4 +520,561 @@ enum Weekday {
 
 通过`ordinal()`返回常量定义的顺序（无实质意义）；
 
-记录类
+##### 28.record
+
+```java
+public final class Point {
+    private final int x;
+    private final int y;
+
+    public Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int x() {
+        return this.x;
+    }
+
+    public int y() {
+        return this.y;
+    }
+}
+
+从Java 14开始，引入了新的Record类。我们定义Record类时，使用关键字record。
+    
+public class Main {
+    public static void main(String[] args) {
+        Point p = new Point(123, 456);
+        System.out.println(p.x());
+        System.out.println(p.y());
+        System.out.println(p);
+    }
+}
+
+public record Point(int x, int y) {}
+
+编写Compact Constructor对参数进行验证
+public record Point(int x, int y) {
+    public static Point of() {
+        return new Point(0, 0);
+    }
+    public static Point of(int x, int y) {
+        return new Point(x, y);
+    }
+}
+var z = Point.of();
+var p = Point.of(123, 456);
+```
+
+##### 29.BigInteger&BigDecimal
+
+```java
+BigInteger bi = new BigInteger("1234567890");
+System.out.println(bi.pow(5)); // 2867971860299718107233761438093672048294900000
+
+BigInteger i1 = new BigInteger("1234567890");
+BigInteger i2 = new BigInteger("12345678901234567890");
+BigInteger sum = i1.add(i2); // 12345678902469135780
+
+BigInteger i = new BigInteger("123456789000");
+System.out.println(i.longValue()); // 123456789000
+System.out.println(i.multiply(i).longValueExact()); // java.lang.ArithmeticException: BigInteger out of long range
+
+
+BigDecimal bd = new BigDecimal("123.4567");
+System.out.println(bd.multiply(bd)); // 15241.55677489
+BigDecimal d1 = new BigDecimal("123.45");
+BigDecimal d2 = new BigDecimal("123.4500");
+BigDecimal d3 = new BigDecimal("1234500");
+System.out.println(d1.scale()); // 2,两位小数
+System.out.println(d2.scale()); // 4
+System.out.println(d3.scale()); // 0
+
+BigDecimal d1 = new BigDecimal("123.4500");
+BigDecimal d2 = d1.stripTrailingZeros();
+System.out.println(d1.scale()); // 4
+System.out.println(d2.scale()); // 2,因为去掉了00
+
+BigDecimal d3 = new BigDecimal("1234500");
+BigDecimal d4 = d3.stripTrailingZeros();
+System.out.println(d3.scale()); // 0
+System.out.println(d4.scale()); // -2
+如果一个BigDecimal的scale()返回负数，例如，-2，表示这个数是个整数，并且末尾有2个0。
+    
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+public class Main {
+    public static void main(String[] args) {
+        BigDecimal d1 = new BigDecimal("123.456789");
+        BigDecimal d2 = d1.setScale(4, RoundingMode.HALF_UP); // 四舍五入，123.4568
+        BigDecimal d3 = d1.setScale(4, RoundingMode.DOWN); // 直接截断，123.4567
+        System.out.println(d2);
+        System.out.println(d3);
+    }
+}
+BigDecimal d1 = new BigDecimal("123.456");
+BigDecimal d2 = new BigDecimal("23.456789");
+BigDecimal d3 = d1.divide(d2, 10, RoundingMode.HALF_UP); // 保留10位小数并四舍五入
+BigDecimal d4 = d1.divide(d2); // 报错：ArithmeticException，因为除不尽
+
+import java.math.BigDecimal;
+public class Main {
+    public static void main(String[] args) {
+        BigDecimal n = new BigDecimal("12.345");
+        BigDecimal m = new BigDecimal("0.12");
+        BigDecimal[] dr = n.divideAndRemainder(m);
+        System.out.println(dr[0]); // 102
+        System.out.println(dr[1]); // 0.105
+    }
+}
+
+BigDecimal n = new BigDecimal("12.75");
+BigDecimal m = new BigDecimal("0.15");
+BigDecimal[] dr = n.divideAndRemainder(m);
+if (dr[1].signum() == 0) {
+    // n是m的整数倍
+}
+
+BigDecimal d1 = new BigDecimal("123.456");
+BigDecimal d2 = new BigDecimal("123.45600");
+System.out.println(d1.equals(d2)); // false,因为scale不同
+System.out.println(d1.equals(d2.stripTrailingZeros())); // true,因为d2去除尾部0后scale变为2
+System.out.println(d1.compareTo(d2)); // 0
+
+总是使用compareTo()比较两个BigDecimal的值，不要使用equals()！
+public class BigDecimal extends Number implements Comparable<BigDecimal> {
+    private final BigInteger intVal;
+    private final int scale;
+}
+```
+
+##### 30.常用工具类
+
+###### 1.Math
+
+```java
+Math.abs(-100); // 100
+Math.abs(-7.8); // 7.8
+Math.max(100, 99); // 100
+Math.min(1.2, 2.3); // 1.2
+Math.pow(2, 10); // 2的10次方=1024
+Math.pow(2, 10); // 2的10次方=1024
+Math.exp(2); // 7.389...
+Math.log(4); // 1.386...
+Math.log10(100); // 2
+Math.sin(3.14); // 0.00159...
+Math.cos(3.14); // -0.9999...
+Math.tan(3.14); // -0.0015...
+Math.asin(1.0); // 1.57079...
+Math.acos(1.0); // 0.0
+double pi = Math.PI; // 3.14159...
+double e = Math.E; // 2.7182818...
+Math.sin(Math.PI / 6); // sin(π/6) = 0.5
+Math.random(); // 0.53907... 每次都不一样 [0,1)
+```
+
+Java标准库还提供了一个`StrictMath`，它提供了和`Math`几乎一模一样的方法。这两个类的区别在于，由于浮点数计算存在误差，不同的平台（例如x86和ARM）计算的结果可能不一致（指误差不同），因此，`StrictMath`保证所有平台计算结果都是完全相同的，而`Math`会尽量针对平台优化计算速度，所以，绝大多数情况下，使用`Math`就足够了。
+
+```java
+Random r = new Random();
+r.nextInt(); // 2071575453,每次都不一样
+r.nextInt(10); // 5,生成一个[0,10)之间的int
+r.nextLong(); // 8811649292570369305,每次都不一样
+r.nextFloat(); // 0.54335...生成一个[0,1)之间的float
+r.nextDouble(); // 0.3716...生成一个[0,1)之间的double
+```
+
+`Random`用来创建伪随机数。所谓伪随机数，是指只要给定一个初始的种子，产生的随机数序列是完全一样的。
+
+这是因为我们创建`Random`实例时，如果不给定种子，就使用系统当前时间戳作为种子，因此每次运行时，种子不同，得到的伪随机数序列就不同。
+
+有伪随机数，就有真随机数。实际上真正的真随机数只能通过量子力学原理来获取，而我们想要的是一个不可预测的安全的随机数，`SecureRandom`就是用来创建安全的随机数的
+
+```java
+SecureRandom sr = new SecureRandom();
+System.out.println(sr.nextInt(100));
+```
+
+`SecureRandom`无法指定种子，它使用RNG（random number generator）算法。JDK的`SecureRandom`实际上有多种不同的底层实现，有的使用安全随机种子加上伪随机数算法来产生安全的随机数，有的使用真正的随机数生成器。实际使用的时候，可以优先获取高强度的安全随机数生成器，如果没有提供，再使用普通等级的安全随机数生成器：
+
+```java
+import java.util.Arrays;
+import java.security.SecureRandom;
+import java.security.NoSuchAlgorithmException;
+
+public class Main {
+    public static void main(String[] args) {
+        SecureRandom sr = null;
+        try {
+            sr = SecureRandom.getInstanceStrong(); // 获取高强度安全随机数生成器
+        } catch (NoSuchAlgorithmException e) {
+            sr = new SecureRandom(); // 获取普通的安全随机数生成器
+        }
+        byte[] buffer = new byte[16];
+        sr.nextBytes(buffer); // 用安全随机数填充buffer
+        System.out.println(Arrays.toString(buffer));
+    }
+}
+```
+
+`SecureRandom`的安全性是通过操作系统提供的安全的随机种子来生成随机数。这个种子是通过CPU的热噪声、读写磁盘的字节、网络流量等各种随机事件产生的“熵”。
+
+在密码学中，安全的随机数非常重要。如果使用不安全的伪随机数，所有加密体系都将被攻破。因此，时刻牢记必须使用`SecureRandom`来产生安全的随机数。
+
+##### 31.异常
+
+```ascii
+                     ┌───────────┐
+                     │  Object   │
+                     └───────────┘
+                           ▲
+                           │
+                     ┌───────────┐
+                     │ Throwable │
+                     └───────────┘
+                           ▲
+                 ┌─────────┴─────────┐
+                 │                   │
+           ┌───────────┐       ┌───────────┐
+           │   Error   │       │ Exception │
+           └───────────┘       └───────────┘
+                 ▲                   ▲
+         ┌───────┘              ┌────┴──────────┐
+         │                      │               │
+┌─────────────────┐    ┌─────────────────┐┌───────────┐
+│OutOfMemoryError │... │RuntimeException ││IOException│...
+└─────────────────┘    └─────────────────┘└───────────┘
+                                ▲
+                    ┌───────────┴─────────────┐
+                    │                         │
+         ┌─────────────────────┐ ┌─────────────────────────┐
+         │NullPointerException │ │IllegalArgumentException │...
+         └─────────────────────┘ └─────────────────────────┘
+```
+
+```java
+Error:
+    OutOfMemoryError：内存耗尽
+    NoClassDefFoundError：无法加载某个Class
+    StackOverflowError：栈溢出
+Exception:	
+    NumberFormatException：数值类型的格式错误
+    FileNotFoundException：未找到文件
+    SocketException：读取网络失败
+    NullPointerException：对某个null的对象调用方法或字段
+    IndexOutOfBoundsException：数组索引越界
+```
+
+在代码中获取原始异常可以使用`Throwable.getCause()`方法。如果返回`null`，说明已经是“根异常”了。
+
+```java
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Exception origin = null;
+        try {
+            System.out.println(Integer.parseInt("abc"));
+        } catch (Exception e) {
+            origin = e;
+            throw e;
+        } finally {
+            Exception e = new IllegalArgumentException();
+            if (origin != null) {
+                e.addSuppressed(origin);
+            }
+            throw e;
+        }
+    }
+}
+```
+
+通过`Throwable.getSuppressed()`可以获取所有的`Suppressed Exception`。
+
+```ascii
+Exception
+│
+├─ RuntimeException
+│  │
+│  ├─ NullPointerException
+│  │
+│  ├─ IndexOutOfBoundsException
+│  │
+│  ├─ SecurityException
+│  │
+│  └─ IllegalArgumentException
+│     │
+│     └─ NumberFormatException
+│
+├─ IOException
+│  │
+│  ├─ UnsupportedCharsetException
+│  │
+│  ├─ FileNotFoundException
+│  │
+│  └─ SocketException
+│
+├─ ParseException
+│
+├─ GeneralSecurityException
+│
+├─ SQLException
+│
+└─ TimeoutException
+```
+
+如果调用方一定要根据`null`判断，比如返回`null`表示文件不存在，那么考虑返回`Optional<T>`
+
+```java
+public Optional<String> readFromFile(String file) {
+    if (!fileExist(file)) {
+        return Optional.empty();
+    }
+    ...
+}
+
+增强的NullPointerException详细信息是Java 14新增的功能，但默认是关闭的，我们可以给JVM添加一个-XX:+ShowCodeDetailsInExceptionMessages参数启用它
+java -XX:+ShowCodeDetailsInExceptionMessages Main.java
+```
+
+##### 32.断言
+
+```java
+public static void main(String[] args) {
+    double x = Math.abs(-123.45);
+    assert x >= 0;
+    System.out.println(x);
+}
+语句assert x >= 0;即为断言，断言条件x >= 0预期为true。如果计算结果为false，则断言失败，抛出AssertionError。
+assert x >= 0 : "x must >= 0";
+
+断言x必须大于0，实际上x为-1，断言肯定失败。执行上述代码，发现程序并未抛出AssertionError，而是正常打印了x的值。
+这是怎么肥四？为什么assert语句不起作用？
+这是因为JVM默认关闭断言指令，即遇到assert语句就自动忽略了，不执行。
+要执行assert语句，必须给Java虚拟机传递-enableassertions（可简写为-ea）参数启用断言。
+
+$ java -ea Main.java
+Exception in thread "main" java.lang.AssertionError
+	at Main.main(Main.java:5)
+
+还可以有选择地对特定地类启用断言，命令行参数是：-ea:com.itranswarp.sample.Main，表示只对com.itranswarp.sample.Main这个类启用断言。
+或者对特定地包启用断言，命令行参数是：-ea:com.itranswarp.sample...（注意结尾有3个.），表示对com.itranswarp.sample这个包启动断言。
+```
+
+##### 33.日志模块
+
+###### 1.logging
+
+```java
+// logging
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Hello {
+    public static void main(String[] args) {
+        Logger logger = Logger.getGlobal();
+        logger.info("start process...");
+        logger.warning("memory is running out...");
+        logger.fine("ignored.");
+        logger.severe("process will be terminated...");
+    }
+}
+```
+
+JDK的Logging定义了7个日志级别，从严重到普通：
+    SEVERE
+    WARNING
+    INFO
+    CONFIG
+    FINE
+    FINER
+    FINEST
+使用Java标准库内置的Logging有以下局限：
+Logging系统在JVM启动时读取配置文件并完成初始化，一旦开始运行main()方法，就无法修改配置；
+配置不太方便，需要在JVM启动时传递参数-Djava.util.logging.config.file=<config-file-name>。
+因此，Java标准库内置的Logging使用并不是非常广泛。更方便的日志系统我们稍后介绍。
+
+###### 2.commons logging
+
+和Java标准库提供的日志不同，Commons Logging是一个第三方日志库，它是由Apache创建的日志模块。
+
+Commons Logging的特色是，它可以挂接不同的日志系统，并通过配置文件指定挂接的日志系统。默认情况下，Commons Loggin自动搜索并使用Log4j（Log4j是另一个流行的日志系统），如果没有找到Log4j，再使用JDK Logging。
+
+```java
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+public class Main {
+    public static void main(String[] args) {
+        Log log = LogFactory.getLog(Main.class);
+        log.info("start...");
+        log.warn("end.");
+    }
+}
+```
+
+Commons Logging定义了6个日志级别：
+
+- FATAL
+- ERROR
+- WARNING
+- INFO
+- DEBUG
+- TRACE
+
+###### 3.Log4j
+
+```java
+log.info("User signed in.");
+ │
+ │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+ ├──>│ Appender │───>│  Filter  │───>│  Layout  │───>│ Console  │
+ │   └──────────┘    └──────────┘    └──────────┘    └──────────┘
+ │
+ │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+ ├──>│ Appender │───>│  Filter  │───>│  Layout  │───>│   File   │
+ │   └──────────┘    └──────────┘    └──────────┘    └──────────┘
+ │
+ │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+ └──>│ Appender │───>│  Filter  │───>│  Layout  │───>│  Socket  │
+     └──────────┘    └──────────┘    └──────────┘    └──────────┘
+```
+
+当我们使用Log4j输出一条日志时，Log4j自动通过不同的Appender把同一条日志输出到不同的目的地。例如：
+
+- console：输出到屏幕；
+- file：输出到文件；
+- socket：通过网络输出到远程计算机；
+- jdbc：输出到数据库
+
+在输出日志的过程中，通过Filter来过滤哪些log需要被输出，哪些log不需要被输出。例如，仅输出`ERROR`级别的日志。
+
+最后，通过Layout来格式化日志信息，例如，自动添加日期、时间、方法名称等信息。
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+	<Properties>
+        <!-- 定义日志格式 -->
+		<Property name="log.pattern">%d{MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36}%n%msg%n%n</Property>
+        <!-- 定义文件名变量 -->
+		<Property name="file.err.filename">log/err.log</Property>
+		<Property name="file.err.pattern">log/err.%i.log.gz</Property>
+	</Properties>
+    <!-- 定义Appender，即目的地 -->
+	<Appenders>
+        <!-- 定义输出到屏幕 -->
+		<Console name="console" target="SYSTEM_OUT">
+            <!-- 日志格式引用上面定义的log.pattern -->
+			<PatternLayout pattern="${log.pattern}" />
+		</Console>
+        <!-- 定义输出到文件,文件名引用上面定义的file.err.filename -->
+		<RollingFile name="err" bufferedIO="true" fileName="${file.err.filename}" filePattern="${file.err.pattern}">
+			<PatternLayout pattern="${log.pattern}" />
+			<Policies>
+                <!-- 根据文件大小自动切割日志 -->
+				<SizeBasedTriggeringPolicy size="1 MB" />
+			</Policies>
+            <!-- 保留最近10份 -->
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="info">
+            <!-- 对info级别的日志，输出到console -->
+			<AppenderRef ref="console" level="info" />
+            <!-- 对error级别的日志，输出到err，即上面定义的RollingFile -->
+			<AppenderRef ref="err" level="error" />
+		</Root>
+	</Loggers>
+</Configuration>
+```
+
+###### 4.SLF4J和Logback
+
+因为对Commons Logging的接口不满意，有人就搞了SLF4J。因为对Log4j的性能不满意，有人就搞了Logback。
+
+我们先来看看SLF4J对Commons Logging的接口有何改进。在Commons Logging中，我们要打印日志，有时候得这么写：
+
+```java
+int score = 99;
+p.setScore(score);
+log.info("Set score " + score + " for Person " + p.getName() + " ok.");
+```
+
+拼字符串是一个非常麻烦的事情，所以SLF4J的日志接口改进成这样了：
+
+```java
+int score = 99;
+p.setScore(score);
+logger.info("Set score {} for Person {} ok.", score, p.getName());
+```
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+			<charset>utf-8</charset>
+		</encoder>
+		<file>log/output.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>log/output.log.%i</fileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>1MB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>
+```
+
+##### 34.反射
+
+###### 1.获取一个类的Class实例
+
+```java
+Class cls = String.class;
+
+String s = "Hello";
+Class cls = s.getClass();
+
+Class cls = Class.forName("java.lang.String");
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        printClassInfo("".getClass());
+        printClassInfo(Runnable.class);
+        printClassInfo(java.time.Month.class);
+        printClassInfo(String[].class);
+        printClassInfo(int.class);
+    }
+
+    static void printClassInfo(Class cls) {
+        System.out.println("Class name: " + cls.getName());
+        System.out.println("Simple name: " + cls.getSimpleName());
+        if (cls.getPackage() != null) {
+            System.out.println("Package name: " + cls.getPackage().getName());
+        }
+        System.out.println("is interface: " + cls.isInterface());
+        System.out.println("is enum: " + cls.isEnum());
+        System.out.println("is array: " + cls.isArray());
+        System.out.println("is primitive: " + cls.isPrimitive());
+    }
+}
+```
+
+反射->访问字段
