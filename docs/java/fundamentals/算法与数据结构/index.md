@@ -396,6 +396,89 @@ public class QuickSort {
 
 #### 贪心思想
 
+贪心算法在有最优子结构的问题中尤为有效。最优子结构的意思是局部最优解能决定全局最优解。简单地说，问题能够分解成子问题来解决，子问题的最优解能递推到最终问题的最优解。贪心算法与动态规划的不同在于它对每个子问题的解决方案都做出选择，不能回退。动态规划则会保存以前的运算结果，并根据以前的结果对当前进行选择，有回退功能。
+
+##### 1.分发饼干
+
+https://leetcode-cn.com/problems/assign-cookies/
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+        int i=g.length -1;
+        int j=s.length -1;
+        int result = 0;
+        
+        while(i>=0 & j>=0) {
+            if(g[i] > s[j]) {
+                i--;
+            }else {
+                i--;
+                j--;
+                result += 1;
+            }
+        }
+        return result;
+    }
+}
+```
+
+##### 2.给定两个字符串s和t，问s是不是t的子序列
+
+```java
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        int i = s.length() - 1;
+        int j = t.length() - 1;
+        boolean ans = false;
+        while(i>=0 && j>=0) {
+            if(s.charAt(i) == t.charAt(j)) {
+                if(i==0) {
+                    ans = true;
+                }
+                i--;
+                j--;
+            } else {
+                j--;
+            }
+        }
+
+        // 处理s为空的情况
+        if(s.length() == 0) {
+            ans = true;
+        }
+        return ans;
+    }
+}
+```
+
+##### 3.无重叠区间
+
+```java
+class Solution {
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+        Arrays.sort(intervals, Comparator.comparingInt(o -> o[1]));
+        int cnt = 1;
+        int end = intervals[0][1];
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] < end) {
+                continue;
+            }
+            end = intervals[i][1];
+            cnt++;
+        }
+        return intervals.length - cnt;
+    }
+}
+```
+
+https://zhuanlan.zhihu.com/p/41826404
+
 #### 二分查找
 
 #### 分治
@@ -403,6 +486,14 @@ public class QuickSort {
 #### 搜索
 
 #### 动态规划
+
+动态规划典型的被用于优化递归算法，因为它们倾向于以指数的方式进行扩展。动态规划主要思想是将复杂问题（带有许多递归调用）分解为更小的子问题，然后将它们保存到内存中，这样我们就不必在每次使用它们时重新计算它们。
+
+1. 动态规划的解题核心主要分为两步：
+   1. 第一步：状态的定义
+   2. 第二步：状态转移方程的定义
+
+https://www.cnblogs.com/yuluoxingkong/p/14431192.html
 
 #### 数学
 
