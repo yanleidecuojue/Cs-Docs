@@ -396,6 +396,89 @@ public class QuickSort {
 
 #### 贪心思想
 
+贪心算法在有最优子结构的问题中尤为有效。最优子结构的意思是局部最优解能决定全局最优解。简单地说，问题能够分解成子问题来解决，子问题的最优解能递推到最终问题的最优解。贪心算法与动态规划的不同在于它对每个子问题的解决方案都做出选择，不能回退。动态规划则会保存以前的运算结果，并根据以前的结果对当前进行选择，有回退功能。
+
+##### 1.分发饼干
+
+https://leetcode-cn.com/problems/assign-cookies/
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+        int i=g.length -1;
+        int j=s.length -1;
+        int result = 0;
+        
+        while(i>=0 & j>=0) {
+            if(g[i] > s[j]) {
+                i--;
+            }else {
+                i--;
+                j--;
+                result += 1;
+            }
+        }
+        return result;
+    }
+}
+```
+
+##### 2.给定两个字符串s和t，问s是不是t的子序列
+
+```java
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        int i = s.length() - 1;
+        int j = t.length() - 1;
+        boolean ans = false;
+        while(i>=0 && j>=0) {
+            if(s.charAt(i) == t.charAt(j)) {
+                if(i==0) {
+                    ans = true;
+                }
+                i--;
+                j--;
+            } else {
+                j--;
+            }
+        }
+
+        // 处理s为空的情况
+        if(s.length() == 0) {
+            ans = true;
+        }
+        return ans;
+    }
+}
+```
+
+##### 3.无重叠区间
+
+```java
+class Solution {
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+        Arrays.sort(intervals, Comparator.comparingInt(o -> o[1]));
+        int cnt = 1;
+        int end = intervals[0][1];
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] < end) {
+                continue;
+            }
+            end = intervals[i][1];
+            cnt++;
+        }
+        return intervals.length - cnt;
+    }
+}
+```
+
+https://zhuanlan.zhihu.com/p/41826404
+
 #### 二分查找
 
 #### 分治
@@ -403,6 +486,115 @@ public class QuickSort {
 #### 搜索
 
 #### 动态规划
+
+动态规划典型的被用于优化递归算法，因为它们倾向于以指数的方式进行扩展。动态规划主要思想是将复杂问题（带有许多递归调用）分解为更小的子问题，然后将它们保存到内存中，这样我们就不必在每次使用它们时重新计算它们。
+
+1. 动态规划的解题核心主要分为两步：
+   1. 第一步：状态的定义
+   2. 第二步：状态转移方程的定义
+
+对于一个可拆分问题中存在可以由前若干项计算当前项的问题可以由动态规划计算。
+
+##### 1.青蛙跳台阶问题
+
+https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/
+
+```java
+# 递归解法
+class Solution {
+    Map<Integer, Integer> map = new HashMap<>();
+    public int numWays(int n) {
+        if(n == 0) {
+            return 1;
+        }
+        if(n <= 2) {
+            return n;
+        }
+
+        if(map.containsKey(n)) {
+            return map.get(n);
+        } else {
+            map.put(n, (numWays(n-1) + numWays(n-2)) % 1000000007);
+            return map.get(n);
+        }
+    }
+}
+```
+
+动态规划有几个典型特征，**最优子结构、状态转移方程、边界、重叠子问题**。在青蛙跳阶问题中：
+
+- f(n-1)和f(n-2) 称为 f(n) 的最优子结构
+- f(n)= f（n-1）+f（n-2）就称为状态转移方程
+- f(1) = 1, f(2) = 2 就是边界啦
+- 比如f(10)= f(9)+f(8),f(9) = f(8) + f(7) ,f(8)就是重叠子问题。
+
+```java
+# 动态规划解法
+class Solution {
+    public int numWays(int n) {
+        if(n <= 1) {
+            return 1;
+        }
+        if(n == 2) {
+            return 2;
+        }
+
+        int temp = 0;
+        int a = 1;
+        int b = 2;
+        for(int i=3; i<=n; i++) {
+            temp = (a + b) % 1000000007;
+            a = b;
+            b = temp;
+        }
+        return temp;
+    }
+}
+```
+
+如果一个问题，可以把所有可能的答案穷举出来，并且穷举出来后，发现存在重叠子问题，就可以考虑使用动态规划。
+
+比如一些求最值的场景，如**最长递增子序列、最小编辑距离、背包问题、凑零钱问题**等等，都是动态规划的经典应用场景。
+
+- 穷举分析
+- 确定边界
+- 找出规律，确定最优子结构
+- 写出状态转移方程
+
+```java
+# 通用
+dp[0][0][...] = 边界值
+for(状态1 ：所有状态1的值){
+    for(状态2 ：所有状态2的值){
+        for(...){
+          //状态转移方程
+          dp[状态1][状态2][...] = 求最值
+        }
+    }
+}
+```
+
+https://juejin.cn/post/6844903993429196813
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #### 数学
 
