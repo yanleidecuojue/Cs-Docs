@@ -493,7 +493,108 @@ https://zhuanlan.zhihu.com/p/41826404
    1. 第一步：状态的定义
    2. 第二步：状态转移方程的定义
 
-https://www.cnblogs.com/yuluoxingkong/p/14431192.html
+对于一个可拆分问题中存在可以由前若干项计算当前项的问题可以由动态规划计算。
+
+##### 1.青蛙跳台阶问题
+
+https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/
+
+```java
+# 递归解法
+class Solution {
+    Map<Integer, Integer> map = new HashMap<>();
+    public int numWays(int n) {
+        if(n == 0) {
+            return 1;
+        }
+        if(n <= 2) {
+            return n;
+        }
+
+        if(map.containsKey(n)) {
+            return map.get(n);
+        } else {
+            map.put(n, (numWays(n-1) + numWays(n-2)) % 1000000007);
+            return map.get(n);
+        }
+    }
+}
+```
+
+动态规划有几个典型特征，**最优子结构、状态转移方程、边界、重叠子问题**。在青蛙跳阶问题中：
+
+- f(n-1)和f(n-2) 称为 f(n) 的最优子结构
+- f(n)= f（n-1）+f（n-2）就称为状态转移方程
+- f(1) = 1, f(2) = 2 就是边界啦
+- 比如f(10)= f(9)+f(8),f(9) = f(8) + f(7) ,f(8)就是重叠子问题。
+
+```java
+# 动态规划解法
+class Solution {
+    public int numWays(int n) {
+        if(n <= 1) {
+            return 1;
+        }
+        if(n == 2) {
+            return 2;
+        }
+
+        int temp = 0;
+        int a = 1;
+        int b = 2;
+        for(int i=3; i<=n; i++) {
+            temp = (a + b) % 1000000007;
+            a = b;
+            b = temp;
+        }
+        return temp;
+    }
+}
+```
+
+如果一个问题，可以把所有可能的答案穷举出来，并且穷举出来后，发现存在重叠子问题，就可以考虑使用动态规划。
+
+比如一些求最值的场景，如**最长递增子序列、最小编辑距离、背包问题、凑零钱问题**等等，都是动态规划的经典应用场景。
+
+- 穷举分析
+- 确定边界
+- 找出规律，确定最优子结构
+- 写出状态转移方程
+
+```java
+# 通用
+dp[0][0][...] = 边界值
+for(状态1 ：所有状态1的值){
+    for(状态2 ：所有状态2的值){
+        for(...){
+          //状态转移方程
+          dp[状态1][状态2][...] = 求最值
+        }
+    }
+}
+```
+
+https://juejin.cn/post/6844903993429196813
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #### 数学
 
