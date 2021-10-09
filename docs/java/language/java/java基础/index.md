@@ -1340,3 +1340,330 @@ public class HelloDynamicProxy implements Hello {
 }
 ```
 
+##### 35.注解
+
+注解是放在Java源码的类、方法、字段、参数前的一种特殊“注释”
+
+Java语言使用`@interface`语法来定义注解（`Annotation`）
+
+```java
+public @interface Report {
+    int type() default 0;
+    String level() default "info";
+    String value() default "";
+}
+```
+
+###### @Target
+
+最常用的元注解是`@Target`。使用`@Target`可以定义`Annotation`能够被应用于源码的哪些位置：
+
+- 类或接口：`ElementType.TYPE`；
+- 字段：`ElementType.FIELD`；
+- 方法：`ElementType.METHOD`；
+- 构造方法：`ElementType.CONSTRUCTOR`；
+- 方法参数：`ElementType.PARAMETER`。
+
+###### @Retention
+
+另一个重要的元注解`@Retention`定义了`Annotation`的生命周期：
+
+- 仅编译期：`RetentionPolicy.SOURCE`；
+- 仅class文件：`RetentionPolicy.CLASS`；
+- 运行期：`RetentionPolicy.RUNTIME`。
+
+如果`@Retention`不存在，则该`Annotation`默认为`CLASS`。因为通常我们自定义的`Annotation`都是`RUNTIME`，所以，务必要加上`@Retention(RetentionPolicy.RUNTIME)`这个元注解
+
+###### @Repeatable
+
+使用`@Repeatable`这个元注解可以定义`Annotation`是否可重复。
+
+###### @Inherited
+
+使用`@Inherited`定义子类是否可继承父类定义的`Annotation`。`@Inherited`仅针对`@Target(ElementType.TYPE)`类型的`annotation`有效，并且仅针对`class`的继承，对`interface`的继承无效
+
+###### 如何定义注解
+
+第一步，用`@interface`定义注解：
+
+```
+public @interface Report {
+}
+```
+
+第二步，添加参数、默认值：
+
+```
+public @interface Report {
+    int type() default 0;
+    String level() default "info";
+    String value() default "";
+}
+```
+
+把最常用的参数定义为`value()`，推荐所有参数都尽量设置默认值。
+
+第三步，用元注解配置注解：
+
+```
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Report {
+    int type() default 0;
+    String level() default "info";
+    String value() default "";
+}
+```
+
+其中，必须设置`@Target`和`@Retention`，`@Retention`一般设置为`RUNTIME`，因为我们自定义的注解通常要求在运行期读取。一般情况下，不必写`@Inherited`和`@Repeatable`。
+
+###### 读取注解
+
+因为注解定义后也是一种`class`，所有的注解都继承自`java.lang.annotation.Annotation`，因此，读取注解，需要使用反射API。
+
+Java提供的使用反射API读取`Annotation`的方法包括：
+
+判断某个注解是否存在于`Class`、`Field`、`Method`或`Constructor`：
+
+- `Class.isAnnotationPresent(Class)`
+- `Field.isAnnotationPresent(Class)`
+- `Method.isAnnotationPresent(Class)`
+- `Constructor.isAnnotationPresent(Class)`
+
+```java
+// 获取Person定义的@Report注解:
+Report report = Person.class.getAnnotation(Report.class);
+int type = report.type();
+String level = report.level();
+
+public void hello(@NotNull @Range(max=5) String name, @NotNull String prefix) {
+}
+
+// 获取Method实例:
+Method m = ...
+// 获取所有参数的Annotation:
+Annotation[][] annos = m.getParameterAnnotations();
+// 第一个参数（索引为0）的所有Annotation:
+Annotation[] annosOfName = annos[0];
+for (Annotation anno : annosOfName) {
+    if (anno instanceof Range) { // @Range注解
+        Range r = (Range) anno;
+    }
+    if (anno instanceof NotNull) { // @NotNull注解
+        NotNull n = (NotNull) anno;
+    }
+}
+```
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Range {
+    int min() default 0;
+    int max() default 255;
+}
+
+public class Person {
+    @Range(min=1, max=20)
+    public String name;
+
+    @Range(max=10)
+    public String city;
+}
+
+void check(Person person) throws IllegalArgumentException, ReflectiveOperationException {
+    // 遍历所有Field:
+    for (Field field : person.getClass().getFields()) {
+        // 获取Field定义的@Range:
+        Range range = field.getAnnotation(Range.class);
+        // 如果@Range存在:
+        if (range != null) {
+            // 获取Field的值:
+            Object value = field.get(person);
+            // 如果值是String:
+            if (value instanceof String) {
+                String s = (String) value;
+                // 判断值是否满足@Range的min/max:
+                if (s.length() < range.min() || s.length() > range.max()) {
+                    throw new IllegalArgumentException("Invalid field: " + field.getName());
+                }
+            }
+        }
+    }
+}
+```
+
+##### 36.泛型
+
+```java
+public class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() { ... }
+    public T getLast() { ... }
+
+    // 静态泛型方法应该使用其他类型区分:
+    public static <K> Pair<K> create(K first, K last) {
+        return new Pair<K>(first, last);
+    }
+}
+```
+
+所以，Java的泛型是由编译器在编译时实行的，编译器内部永远把所有类型`T`视为`Object`处理，但是，在需要转型的时候，编译器会根据`T`的类型自动为我们实行安全地强制转型。
+
+了解了Java泛型的实现方式——擦拭法，我们就知道了Java泛型的局限：
+
+局限一：`<T>`不能是基本类型，例如`int`，因为实际类型是`Object`，`Object`类型无法持有基本类型：
+
+```java
+Pair<int> p = new Pair<>(1, 2); // compile error!
+```
+
+局限二：无法取得带泛型的`Class`。观察以下代码：
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Pair<String> p1 = new Pair<>("Hello", "world");
+        Pair<Integer> p2 = new Pair<>(123, 456);
+        Class c1 = p1.getClass();
+        Class c2 = p2.getClass();
+        System.out.println(c1==c2); // true
+        System.out.println(c1==Pair.class); // true
+
+    }
+}
+
+class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() {
+        return first;
+    }
+    public T getLast() {
+        return last;
+    }
+}
+```
+
+局限三：无法判断带泛型的类型：
+
+```java
+Pair<Integer> p = new Pair<>(123, 456);
+// Compile error:
+if (p instanceof Pair<String>) {
+}
+```
+
+局限四：不能实例化`T`类型：
+
+```java
+public class Pair<T> {
+    private T first;
+    private T last;
+    public Pair() {
+        // Compile error:
+        first = new T();
+        last = new T();
+    }
+}
+```
+
+上述代码无法通过编译，因为构造方法的两行语句：
+
+```java
+first = new T();
+last = new T();
+擦拭后变为：
+first = new Object();
+last = new Object();
+
+借助class<T>参数
+public class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(Class<T> clazz) {
+        first = clazz.newInstance();
+        last = clazz.newInstance();
+    }
+}
+
+Pair<String> pair = new Pair<>(String.class);
+```
+
+```java
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+public class Main {
+    public static void main(String[] args) {
+        Class<IntPair> clazz = IntPair.class;
+        Type t = clazz.getGenericSuperclass();
+        if (t instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) t;
+            Type[] types = pt.getActualTypeArguments(); // 可能有多个泛型类型
+            Type firstType = types[0]; // 取第一个泛型类型
+            Class<?> typeClass = (Class<?>) firstType;
+            System.out.println(typeClass); // Integer
+        }
+
+    }
+}
+
+class Pair<T> {
+    private T first;
+    private T last;
+    public Pair(T first, T last) {
+        this.first = first;
+        this.last = last;
+    }
+    public T getFirst() {
+        return first;
+    }
+    public T getLast() {
+        return last;
+    }
+}
+
+class IntPair extends Pair<Integer> {
+    public IntPair(Integer first, Integer last) {
+        super(first, last);
+    }
+}
+```
+
+使用类似`<? extends Number>`通配符作为方法参数时表示：
+
+- 方法内部可以调用获取`Number`引用的方法，例如：`Number n = obj.getFirst();`；
+- 方法内部无法调用传入`Number`引用的方法（`null`除外），例如：`obj.setFirst(Number n);`。
+
+即一句话总结：使用`extends`通配符表示可以读，不能写。
+
+使用类似`<T extends Number>`定义泛型类时表示：
+
+- 泛型类型限定为`Number`以及`Number`的子类。
+
+我们再回顾一下`extends`通配符。作为方法参数，`<? extends T>`类型和`<? super T>`类型的区别在于：
+
+- `<? extends T>`允许调用读方法`T get()`获取`T`的引用，但不允许调用写方法`set(T)`传入`T`的引用（传入`null`除外）；
+- `<? super T>`允许调用写方法`set(T)`传入`T`的引用，但不允许调用读方法`T get()`获取`T`的引用（获取`Object`除外）。
+
+何时使用`extends`，何时使用`super`？为了便于记忆，我们可以用PECS原则：Producer Extends Consumer Super。
+
+即：如果需要返回`T`，它是生产者（Producer），要使用`extends`通配符；如果需要写入`T`，它是消费者（Consumer），要使用`super`通配符。
+
+无限定通配符`<?>`很少使用，可以用`<T>`替换，同时它是所有`<T>`类型的超类。
+
+可以声明带泛型的数组，但不能直接创建带泛型的数组，必须强制转型；
+
+可以通过`Array.newInstance(Class<T>, int)`创建`T[]`数组，需要强制转型；
+
+同时使用泛型和可变参数时需要特别小心。
