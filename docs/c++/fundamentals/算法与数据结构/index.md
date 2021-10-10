@@ -1,6 +1,41 @@
 #### 剑指Offer
 
-#### 数组
+##### 未知问题
+
+1.二叉搜索树转换为排序的双向列表
+
+2.二叉树 最大堆。红黑树
+
+3.旋转数组的意思
+
+4.位运算
+
+#####  0.1.将一个字符串转换为整数
+
+```C++
+#include <iostream>
+using namespace std;
+
+int StrToInc(char* string) {
+  int number = 0;
+  while (*string != 0)
+  {
+    number = number * 10 + *string - '0';
+    cout << *string<<endl;
+    ++string;
+  }
+  return number;
+}
+
+int main() {
+  char* a = "123s";
+  cout << (StrToInc(a));
+}
+```
+
+
+
+##### 数组
 
 ##### 1.找出数组中重复的数字
 
@@ -53,4 +88,8 @@ class Solution {
 ```java
 p83
 ```
+
+#### 回溯法
+
+矩阵中的路径
 
