@@ -1667,3 +1667,4 @@ class IntPair extends Pair<Integer> {
 可以通过`Array.newInstance(Class<T>, int)`创建`T[]`数组，需要强制转型；
 
 同时使用泛型和可变参数时需要特别小心。
+
