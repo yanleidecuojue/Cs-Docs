@@ -1265,3 +1265,11 @@ print('获取某个位置数据 - 2:\n', df.loc[1, 'B'])
 https://pandas.pydata.org/docs/user_guide/index.html
 
 https://numpy.org/doc/stable/user/index.html
+
+
+
+
+
+https://docs.python.org/zh-cn/3/library/multiprocessing.html#using-a-remote-manager
+
+python多进程编程=》如何设计实现多进程报表汇总
