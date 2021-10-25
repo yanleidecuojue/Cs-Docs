@@ -1266,10 +1266,154 @@ https://pandas.pydata.org/docs/user_guide/index.html
 
 https://numpy.org/doc/stable/user/index.html
 
+#### 三.multiprocessing
 
+##### 1.Pool & Process
 
+```python
+from multiprocessing import Pool
+from multiprocessing import Process
 
+import os
+
+def f_pool(x):
+  return x*x
+
+def f_process(name):
+  info('function f_process')
+  print('hello', name)
+
+def info(title):
+  print(title)
+  print('module name:', __name__)
+  print('parent process:', os.getppid())
+  print('process id:', os.getpid())
+
+if __name__ == '__main__':
+  # Pool
+  with Pool(5) as p:
+    print(p.map(f_pool, [1, 2, 3]))
+  # Process & 显示所涉及的各个进程id
+  p = Process(target=f_process, args=['bob',])
+  p.start()
+  p.join()
+```
+
+##### 2.上下文和启动方法
+
+```python
+# 根据不同的平台，multiprocessing支持三种启动进程的方法
+# 1.spawn
+# 父进程会启动一个全新的 python 解释器进程。 子进程将只继承那些运行进程对象的 run() 方法所必需的资源。 
+# 特别地，来自父进程的非必需文件描述符和句柄将不会被继承。 使用此方法启动进程相比使用 fork 或 forkserver 要慢上许多。
+# 2.fork
+# 父进程使用 os.fork() 来产生 Python 解释器分叉。子进程在开始时实际上与父进程相同。父进程的所有资源都由子进程继承。
+# 请注意，安全分叉多线程进程是棘手的。
+# 3.forkserver
+# 程序启动并选择* forkserver * 启动方法时，将启动服务器进程。从那时起，每当需要一个新进程时，父进程就会连接到服务器并请求它分叉一个新进程。
+# 分叉服务器进程是单线程的，因此使用 os.fork() 是安全的。没有不必要的资源被继承。
+# 在 3.8 版更改: 对于 macOS，spawn 启动方式是默认方式。 因为 fork 可能导致subprocess崩溃，被认为是不安全的，
+# 在 3.4 版更改: 在所有unix平台上添加支持了 spawn ，并且为一些unix平台添加了 forkserver 。在Windows上子进程不再继承所有可继承的父进程句柄。
+# 在 Unix 上通过 spawn 和 forkserver 方式启动多进程会同时启动一个 资源追踪 进程，
+# 负责追踪当前程序的进程产生的、并且不再被使用的命名系统资源(如命名信号量以及 SharedMemory 对象)。
+# 当所有进程退出后，资源追踪会负责释放这些仍被追踪的的对象。通常情况下是不会有这种对象的，但是假如一个子进程被某个信号杀死，就可能存在这一类资源的“泄露”情况。
+# （泄露的信号量以及共享内存不会被释放，直到下一次系统重启，对于这两类资源来说，这是一个比较大的问题，因为操作系统允许的命名信号量的数量是有限的，而共享内存也会占据主内存的一片空间）
+# 要选择一个启动方法，你应该在主模块的 if __name__ == '__main__' 子句中调用 set_start_method() 。
+import multiprocessing as mp
+
+def foo(q):
+    q.put('hello')
+
+if __name__ == '__main__':
+    mp.set_start_method('spawn')
+    q = mp.Queue()
+    p = mp.Process(target=foo, args=(q,))
+    p.start()
+    print(q.get())
+    p.join()
+```
+
+##### 3.在进程之间交换对象
+
+###### a.队列
+
+```python
+from multiprocessing import Process, Queue
+
+def f(q):
+    q.put([42, None, 'hello'])
+
+if __name__ == '__main__':
+    q = Queue()
+    p = Process(target=f, args=(q,))
+    p.start()
+    print(q.get())    # prints "[42, None, 'hello']"
+    p.join()
+```
+
+###### b.管道
+
+```python
+from multiprocessing import Process, Pipe
+
+def f(conn):
+    conn.send([42, None, 'hello'])
+    conn.close()
+
+if __name__ == '__main__':
+    parent_conn, child_conn = Pipe()
+    p = Process(target=f, args=(child_conn,))
+    p.start()
+    print(parent_conn.recv())   # prints "[42, None, 'hello']"
+    p.join()
+```
+
+##### 4.进程间同步
+
+```python
+from multiprocessing import Process, Lock
+
+def f(l, i):
+    l.acquire()
+    try:
+        print('hello world', i)
+    finally:
+        l.release()
+
+if __name__ == '__main__':
+    lock = Lock()
+
+    for num in range(10):
+        Process(target=f, args=(lock, num)).start()
+```
+
+##### 5.进程间共享状态
+
+在进行并发编程时，通常最好尽量避免使用共享状态。使用多个进程时尤其如此。
+
+###### a.共享内存
+
+```python
+from multiprocessing import Process, Value, Array
+
+def f(n, a):
+    n.value = 3.1415927
+    for i in range(len(a)):
+        a[i] = -a[i]
+
+if __name__ == '__main__':
+    num = Value('d', 0.0)
+    arr = Array('i', range(10))
+
+    p = Process(target=f, args=(num, arr))
+    p.start()
+    p.join()
+
+    print(num.value)
+    print(arr[:])
+```
+
+###### b.服务进程
 
 https://docs.python.org/zh-cn/3/library/multiprocessing.html#using-a-remote-manager
 
-python多进程编程=》如何设计实现多进程报表汇总
